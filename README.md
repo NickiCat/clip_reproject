@@ -39,21 +39,45 @@ flowchart LR
 
 ## Установка
 
-1. Скачайте репозиторий (**Code → Download ZIP** на странице проекта) или клонируйте его:
-   ```bash
-   git clone <URL этого репозитория>
+### Windows
+
+1. **Скачайте плагин.** На странице репозитория нажмите **Code → Download ZIP** и распакуйте архив. Внутри будет папка `clip_reproject-main`: переименуйте её в **`clip_reproject`**.
+
+2. **Откройте папку плагинов QGIS.** Нажмите `Win + R`, вставьте путь и нажмите Enter:
    ```
-2. Скопируйте папку `clip_reproject` в каталог плагинов QGIS вручную или командой `make deploy` (каталог определяется автоматически):
+   %APPDATA%\QGIS\QGIS3\profiles\default\python\plugins
+   ```
+   Если папки `plugins` нет, создайте её. Для профиля QGIS с другим именем замените `default` на него. Папку активного профиля можно открыть и из QGIS: **Установки → Профили пользователей → Открыть папку активного профиля**, затем перейти в `python\plugins`.
 
-   | ОС | Путь |
-   |----|------|
-   | Windows | `%APPDATA%\QGIS\QGIS3\profiles\default\python\plugins\` |
-   | Linux | `~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/` |
-   | macOS | `~/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/` |
+3. **Скопируйте плагин.** Положите папку `clip_reproject` в `plugins`. Файлы плагина должны лежать прямо в ней:
+   ```
+   ...\python\plugins\clip_reproject\__init__.py
+   ...\python\plugins\clip_reproject\metadata.txt
+   ...
+   ```
+   > [!WARNING]
+   > Проверьте, что не получилось вложенной папки вида `clip_reproject\clip_reproject-main\...`. С такой структурой QGIS плагин не найдёт.
 
-3. Перезапустите QGIS и включите плагин в меню **Модули → Управление модулями → Установленные**.
+4. **Включите плагин.** Перезапустите QGIS, откройте **Модули → Управление модулями → Установленные** и отметьте **Clip Reproject**.
 
-После этого на панели инструментов появится иконка плагина, а в меню **Модули** — пункт **Clip Reproject**.
+### Linux и macOS
+
+Скачайте или клонируйте репозиторий и скопируйте папку `clip_reproject` в каталог плагинов QGIS (или выполните `make deploy`, см. [Разработка](#разработка)):
+
+| ОС | Каталог плагинов |
+|----|------|
+| Linux | `~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/` |
+| macOS | `~/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/` |
+
+Затем перезапустите QGIS и включите плагин в **Модули → Управление модулями → Установленные**.
+
+### После установки
+
+На панели инструментов появится иконка плагина, а в меню **Модули** — пункт **Clip Reproject**.
+
+Если плагина нет в списке установленных:
+- проверьте структуру папок (см. шаг 3 для Windows);
+- откройте **Вид → Панели → Журнал сообщений**: ошибки загрузки будут на вкладке *Python* или *Clip Reproject*.
 
 ## Использование
 
