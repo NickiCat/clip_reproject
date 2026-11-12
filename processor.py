@@ -68,25 +68,17 @@ class Processor:
                 continue
 
             base_name = os.path.splitext(file_name)[0]
-            clipped_path = os.path.join(output_folder, f"{base_name}_clip.gpkg")
             final_path = os.path.join(output_folder, f"{base_name}_gsk2011.gpkg")
+            Processor._remove_project_layers(final_path)
 
-            try:
-                processing.run(
-                    "native:clip",
-                    {"INPUT": layer, "OVERLAY": selected, "OUTPUT": clipped_path},
-                )
-                processing.run(
-                    "native:reprojectlayer",
-                    {
-                        "INPUT": clipped_path,
-                        "TARGET_CRS": target_crs,
-                        "OUTPUT": final_path,
-                    },
-                )
-            finally:
-                if os.path.exists(clipped_path):
-                    os.remove(clipped_path)
+            clipped = processing.run(
+                "native:clip",
+                {"INPUT": layer, "OVERLAY": selected, "OUTPUT": "TEMPORARY_OUTPUT"},
+            )["OUTPUT"]
+            processing.run(
+                "native:reprojectlayer",
+                {"INPUT": clipped, "TARGET_CRS": target_crs, "OUTPUT": final_path},
+            )
 
             result_layer = QgsVectorLayer(final_path, f"{base_name}_gsk2011", "ogr")
             if result_layer.isValid():
@@ -94,3 +86,20 @@ class Processor:
             processed_count += 1
 
         return processed_count
+
+    @staticmethod
+    def _remove_project_layers(path):
+        """Remove project layers that read from ``path`` so the file can be overwritten.
+
+        A layer from a previous run keeps the GeoPackage open, which blocks
+        overwriting it (on Windows) and would add a duplicate layer to the project.
+        """
+        target = os.path.normcase(os.path.abspath(path))
+        project = QgsProject.instance()
+        layer_ids = [
+            layer_id
+            for layer_id, layer in project.mapLayers().items()
+            if os.path.normcase(os.path.abspath(layer.source().split("|")[0])) == target
+        ]
+        if layer_ids:
+            project.removeMapLayers(layer_ids)

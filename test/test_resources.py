@@ -8,14 +8,14 @@
 
 """
 
-__author__ = 'kalmykovstepan4@gmail.com'
-__date__ = '2026-09-28'
-__copyright__ = 'Copyright 2026, KalmikovStepan'
+__author__ = "kalmykovstepan4@gmail.com"
+__date__ = "2026-09-28"
+__copyright__ = "Copyright 2026, KalmikovStepan"
 
+import os
 import unittest
 
 from qgis.PyQt.QtGui import QIcon
-
 
 
 class ClipReprojectDialogTest(unittest.TestCase):
@@ -30,15 +30,13 @@ class ClipReprojectDialogTest(unittest.TestCase):
         pass
 
     def test_icon_png(self):
-        """Test we can click OK."""
-        path = ':/plugins/ClipReproject/icon.png'
+        """Test the plugin icon can be loaded."""
+        path = os.path.join(os.path.dirname(__file__), os.pardir, "icon.png")
         icon = QIcon(path)
         self.assertFalse(icon.isNull())
+
 
 if __name__ == "__main__":
     suite = unittest.makeSuite(ClipReprojectDialogTest)
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
-
-
-

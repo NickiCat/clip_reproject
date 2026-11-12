@@ -1,4 +1,3 @@
-
 """Error handling and logging for the QGIS plugin."""
 
 import traceback

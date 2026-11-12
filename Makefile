@@ -38,13 +38,15 @@ LOCALES =
 # translation
 SOURCES = \
 	__init__.py \
-	clip_reproject.py clip_reproject_dialog.py
+	clip_reproject.py clip_reproject_dialog.py \
+	processor.py error_handling.py
 
 PLUGINNAME = clip_reproject
 
 PY_FILES = \
 	__init__.py \
-	clip_reproject.py clip_reproject_dialog.py
+	clip_reproject.py clip_reproject_dialog.py \
+	processor.py error_handling.py
 
 UI_FILES = clip_reproject_dialog_base.ui
 
@@ -55,7 +57,7 @@ EXTRA_DIRS =
 PEP8EXCLUDE=pydev,conf.py,third_party,ui
 
 # QGISDIR is the absolute path to your QGIS Python plugins directory.
-# It is set automatically based on your OS and QGIS version:
+# It is set automatically based on your OS (QGIS3, profile "default"):
 #	* Linux QGIS3:   ~/.local/share/QGIS/QGIS3/profiles/default/python/plugins
 #	* Linux QGIS4:   ~/.local/share/QGIS/QGIS4/profiles/default/python/plugins
 #	* Mac OS X QGIS3: ~/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins
@@ -63,7 +65,22 @@ PEP8EXCLUDE=pydev,conf.py,third_party,ui
 #	* Windows QGIS3: %APPDATA%\QGIS\QGIS3\profiles\default\python\plugins
 #	* Windows QGIS4: %APPDATA%\QGIS\QGIS4\profiles\default\python\plugins
 
-QGISDIR=C:\Users\Степан\AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins
+# Override it if needed, e.g.:
+#	make deploy QGIS_PROFILE=work
+#	make deploy QGISDIR=/path/to/plugins
+
+QGIS_VERSION_DIR ?= QGIS3
+QGIS_PROFILE ?= default
+
+ifeq ($(OS),Windows_NT)
+QGIS_BASE_DIR = $(subst \,/,$(APPDATA))/QGIS
+else ifeq ($(shell uname -s),Darwin)
+QGIS_BASE_DIR = $(HOME)/Library/Application Support/QGIS
+else
+QGIS_BASE_DIR = $(HOME)/.local/share/QGIS
+endif
+
+QGISDIR ?= $(QGIS_BASE_DIR)/$(QGIS_VERSION_DIR)/profiles/$(QGIS_PROFILE)/python/plugins
 
 #################################################
 # Normally you would not need to edit below here
@@ -108,14 +125,14 @@ deploy: transcompile doc
 	@echo "------------------------------------------"
 	@echo "Deploying plugin to your QGIS plugins directory."
 	@echo "------------------------------------------"
-	mkdir -p $(QGISDIR)/$(PLUGINNAME)
-	cp -vf $(PY_FILES) $(QGISDIR)/$(PLUGINNAME)
-	$(if $(UI_FILES), cp -vf $(UI_FILES) $(QGISDIR)/$(PLUGINNAME))
-	cp -vf $(EXTRAS) $(QGISDIR)/$(PLUGINNAME)
-	cp -vfr i18n $$(HOME)/$$(QGISDIR)/python/plugins/$$(PLUGINNAME)
-	cp -vfr $$(HELP) $$(HOME)/$$(QGISDIR)/python/plugins/$$(PLUGINNAME)/help
+	mkdir -p "$(QGISDIR)/$(PLUGINNAME)"
+	cp -vf $(PY_FILES) "$(QGISDIR)/$(PLUGINNAME)"
+	$(if $(UI_FILES), cp -vf $(UI_FILES) "$(QGISDIR)/$(PLUGINNAME)")
+	cp -vf $(EXTRAS) "$(QGISDIR)/$(PLUGINNAME)"
+	cp -vfr i18n "$(QGISDIR)/$(PLUGINNAME)"
+	cp -vfr $(HELP) "$(QGISDIR)/$(PLUGINNAME)/help"
 	# Copy extra directories if any
-	$(if $(EXTRA_DIRS), $(foreach EXTRA_DIR,$(EXTRA_DIRS), cp -R $(EXTRA_DIR) $(QGISDIR)/$(PLUGINNAME)/;))
+	$(if $(EXTRA_DIRS), $(foreach EXTRA_DIR,$(EXTRA_DIRS), cp -R $(EXTRA_DIR) "$(QGISDIR)/$(PLUGINNAME)/";))
 
 
 # The dclean target removes compiled python files from plugin directory
@@ -125,8 +142,8 @@ dclean:
 	@echo "-----------------------------------"
 	@echo "Removing any compiled python files."
 	@echo "-----------------------------------"
-	find $(QGISDIR)/$(PLUGINNAME) -iname "*.pyc" -delete
-	find $(QGISDIR)/$(PLUGINNAME) -iname ".git" -prune -exec rm -Rf {} \;
+	find "$(QGISDIR)/$(PLUGINNAME)" -iname "*.pyc" -delete
+	find "$(QGISDIR)/$(PLUGINNAME)" -iname ".git" -prune -exec rm -Rf {} \;
 
 
 derase:
@@ -134,7 +151,7 @@ derase:
 	@echo "-------------------------"
 	@echo "Removing deployed plugin."
 	@echo "-------------------------"
-	rm -Rf $(QGISDIR)/$(PLUGINNAME)
+	rm -Rf "$(QGISDIR)/$(PLUGINNAME)"
 
 zip: deploy dclean
 	@echo
@@ -144,7 +161,7 @@ zip: deploy dclean
 	# The zip target deploys the plugin and creates a zip file with the deployed
 	# content. You can then upload the zip file on http://plugins.qgis.org
 	rm -f $(PLUGINNAME).zip
-	cd $(QGISDIR); zip -9r $(CURDIR)/$(PLUGINNAME).zip $(PLUGINNAME)
+	cd "$(QGISDIR)"; zip -9r $(CURDIR)/$(PLUGINNAME).zip $(PLUGINNAME)
 
 package:
 	# Create a zip package of the plugin named $(PLUGINNAME).zip.

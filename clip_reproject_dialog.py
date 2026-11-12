@@ -1,11 +1,10 @@
-
 # -*- coding: utf-8 -*-
 """Dialog and input validation for the Clip Reproject QGIS plugin."""
 
 import os
 
-from qgis.PyQt import QtWidgets, uic
 from qgis.core import QgsCoordinateReferenceSystem
+from qgis.PyQt import QtWidgets, uic
 
 FORM_CLASS, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "clip_reproject_dialog_base.ui"),

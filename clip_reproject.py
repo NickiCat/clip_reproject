@@ -21,16 +21,17 @@
  *                                                                         *
  ***************************************************************************/
 """
+
 import os
 
+from qgis.core import QgsSettings
 from qgis.PyQt.QtCore import QCoreApplication, QLocale, QTranslator
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QMessageBox
-from qgis.core import QgsSettings
 
 from .clip_reproject_dialog import ClipReprojectDialog
-from .processor import Processor
 from .error_handling import execute_with_feedback
+from .processor import Processor
 
 
 class ClipReproject:
@@ -49,11 +50,8 @@ class ClipReproject:
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
-        locale = QgsSettings().value('locale/userLocale', QLocale().name())[0:2]
-        locale_path = os.path.join(
-            self.plugin_dir,
-            'i18n',
-            '{}.qm'.format(locale))
+        locale = QgsSettings().value("locale/userLocale", QLocale().name())[0:2]
+        locale_path = os.path.join(self.plugin_dir, "i18n", "{}.qm".format(locale))
 
         if os.path.exists(locale_path):
             self.translator = QTranslator()
@@ -62,7 +60,7 @@ class ClipReproject:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&Clip Reproject')
+        self.menu = self.tr("&Clip Reproject")
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
@@ -81,8 +79,7 @@ class ClipReproject:
         :rtype: QString
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('ClipReproject', message)
-
+        return QCoreApplication.translate("ClipReproject", message)
 
     def add_action(
         self,
@@ -94,7 +91,8 @@ class ClipReproject:
         add_to_toolbar=True,
         status_tip=None,
         whats_this=None,
-        parent=None):
+        parent=None,
+    ):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -150,9 +148,7 @@ class ClipReproject:
             self.iface.addToolBarIcon(action)
 
         if add_to_menu:
-            self.iface.addPluginToMenu(
-                self.menu,
-                action)
+            self.iface.addPluginToMenu(self.menu, action)
 
         self.actions.append(action)
 
@@ -161,25 +157,22 @@ class ClipReproject:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = os.path.join(os.path.dirname(__file__), 'icon.png')
+        icon_path = os.path.join(os.path.dirname(__file__), "icon.png")
         self.add_action(
             icon_path,
-            text=self.tr(u'Clip Reproject'),
+            text=self.tr("Clip Reproject"),
             callback=self.run,
-            parent=self.iface.mainWindow())
+            parent=self.iface.mainWindow(),
+        )
 
         # will be set False in run()
         self.first_start = True
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
-            self.iface.removePluginMenu(
-                self.tr(u'&Clip Reproject'),
-                action)
+            self.iface.removePluginMenu(self.tr("&Clip Reproject"), action)
             self.iface.removeToolBarIcon(action)
-
 
     def run(self):
         """Show the dialog, collect parameters and call the data processor."""
@@ -200,18 +193,11 @@ class ClipReproject:
             "output_folder": self.dlg.result_path.filePath(),
         }
 
-               
-        processed_count = execute_with_feedback(
-            self.dlg, Processor.process, params
-        )
+        processed_count = execute_with_feedback(self.dlg, Processor.process, params)
         if processed_count is None:
             return
 
         if processed_count == 0:
-            QMessageBox.warning(
-                self.dlg, "Готово", "В выбранной папке не найдено SHP-файлов."
-            )
+            QMessageBox.warning(self.dlg, "Готово", "В выбранной папке не найдено SHP-файлов.")
         else:
-            QMessageBox.information(
-                self.dlg, "Готово", f"Обработано слоёв: {processed_count}"
-            )
+            QMessageBox.information(self.dlg, "Готово", f"Обработано слоёв: {processed_count}")
